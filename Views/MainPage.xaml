@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:LambdaNu.ViewModels"
+             x:DataType="viewmodels:MainViewModel"
+             x:Class="LambdaNu.Views.MainPage">
+
+    <Grid RowDefinitions="Auto,*">
+        <Button Text="&#x2699;" HorizontalOptions="End" Padding="5" BackgroundColor="Transparent"
+                TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}"
+                FontSize="22" Command="{Binding ConfigCommand}" />
+
+        <VerticalStackLayout Grid.Row="1" Spacing="10" VerticalOptions="Center">
+            <Label Text="Convert" FontSize="32" Style="{StaticResource ConfigHeaderStyle}" HorizontalOptions="Center" />
+
+            <Label Text="Wavelength or Frequency" Style="{StaticResource ConfigHeaderStyle}"
+                   FontSize="20" HorizontalOptions="Center" />
+
+            <Grid BackgroundColor="{AppThemeBinding Light={StaticResource Gray100},Dark={StaticResource Gray950}}"
+                  RowDefinitions="*,*,*,*,*,*,*" ColumnDefinitions="*,Auto,Auto,Auto,*">
+                <Entry  Grid.Row="0" Grid.Column="2" HorizontalTextAlignment="Center" Margin="0, 10, 5, 0"
+                        Text="{Binding Input}"/>
+                <Picker Grid.Row="0" Grid.Column="3" Margin="5, 10, 0, 0" x:Name="OrigUnit"
+                        ItemsSource="{Binding Units, Mode=OneWay}" SelectedItem="{Binding FromUnit}"/>
+
+                <Label  Grid.Row="1" Grid.Column="1" VerticalOptions="Center" HorizontalOptions="End"
+                        Text="=" Margin="0, 5, 5, 10"/>
+                <Label  Grid.Row="1" Grid.Column="2" VerticalOptions="Center" Margin="0, 5, 5, 10"
+                        Text="{Binding Result, Mode=OneWay, StringFormat='{0:F3}'}"/>
+                <Picker Grid.Row="1" Grid.Column="3" Margin="5, 5, 0, 10" VerticalOptions="Center"
+                        ItemsSource="{Binding Units, Mode=OneWay}" SelectedItem="{Binding ToUnit}" />
+
+                <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="5" StrokeThickness="0"
+                        BackgroundColor="{AppThemeBinding Dark={StaticResource Black}, Light={StaticResource White}}">
+                    <Label Text="Bandwidth" FontSize="20" Style="{StaticResource ConfigHeaderStyle}" HorizontalOptions="Center" Margin="10"/>
+                </Border>
+
+                <Picker Grid.Row="3" Grid.Column="1" HorizontalOptions="End" Margin="0, 10, 0, 0" VerticalOptions="Center"
+                        ItemsSource="{Binding BwModes}" SelectedItem="{Binding BwMode}"/>
+                <Entry  Grid.Row="3" Grid.Column="2" HorizontalTextAlignment="Center" Margin="5, 10, 5, 0"
+                        Text="{Binding BwDelta}"/>
+                <Picker Grid.Row="3" Grid.Column="3" Margin="0, 10, 0, 0"
+                        ItemsSource="{Binding Units, Mode=OneWay}" SelectedItem="{Binding BwDeltaUnit}" />
+
+                <Label Grid.Row="4" Grid.Column="1" VerticalOptions="Center" HorizontalTextAlignment="End"
+                       Text="lower" Margin="0, 5, 5, 10"/>
+                <Label Grid.Row="4" Grid.Column="2" VerticalOptions="Center" Margin="5, 5, 5, 10" HorizontalTextAlignment="Center"
+                       Text="{Binding BwResultLower, Mode=OneWay, StringFormat='{0:F3}'}"/>
+                <Label Grid.Row="4" Grid.Column="3" Margin="0, 5, 0, 10" VerticalOptions="Center"
+                       Text="{Binding Source={Reference OrigUnit}, Path=SelectedItem}"/>
+
+                <Label Grid.Row="5" Grid.Column="1" VerticalOptions="Center" HorizontalTextAlignment="End"
+                       Text="upper" Margin="0, 5, 5, 10"/>
+                <Label Grid.Row="5" Grid.Column="2" VerticalOptions="Center" Margin="5, 5, 5, 10" HorizontalTextAlignment="Center"
+                       Text="{Binding BwResultUpper, Mode=OneWay, StringFormat='{0:F3}'}"/>
+                <Label Grid.Row="5" Grid.Column="3" Margin="0, 5, 0, 10" VerticalOptions="Center"
+                       Text="{Binding Source={Reference OrigUnit}, Path=SelectedItem}"/>
+
+                <Label  Grid.Row="6" Grid.Column="1" VerticalOptions="Center" HorizontalTextAlignment="End"
+                        Text="=" Margin="0, 5, 5, 10"/>
+                <Label  Grid.Row="6" Grid.Column="2" VerticalOptions="Center" Margin="5, 5, 5, 10" HorizontalTextAlignment="Center"
+                        Text="{Binding BwResult, Mode=OneWay, StringFormat='{0:F3}'}"/>
+                <Picker Grid.Row="6" Grid.Column="3" Margin="0, 5, 0, 10" VerticalOptions="Center"
+                        ItemsSource="{Binding Units, Mode=OneWay}" SelectedItem="{Binding BwUnit}" />
+            </Grid>
+        </VerticalStackLayout>
+    </Grid>
+
+</ContentPage>
