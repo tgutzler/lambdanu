@@ -1,13 +1,11 @@
-﻿using LambdaNu.Views;
-
-namespace LambdaNu;
+﻿namespace LambdaNu;
 
 public partial class AppShell : Shell
 {
 	public AppShell()
 	{
-		InitializeComponent();
+		Routing.RegisterRoute(nameof(Views.SettingsPage), typeof(Views.SettingsPage));
 
-		Routing.RegisterRoute(nameof(SettingsPage), typeof(SettingsPage));
+		InitializeComponent();
 	}
 }

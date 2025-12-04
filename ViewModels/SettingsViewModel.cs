@@ -1,44 +1,35 @@
 ﻿using System.Windows.Input;
-using LambdaNu.Providers;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace LambdaNu.ViewModels;
 
-public class SettingsViewModel : ViewModelBase
+internal partial class SettingsViewModel : ObservableObject
 {
-    private readonly ISettingsService settingsService;
-    private double speedOfLight;
+    [ObservableProperty]
+    private double _speedOfLight;
+    private const double c = 299792458;
 
-    public SettingsViewModel(ISettingsService settingsService)
+    public SettingsViewModel()
     {
-        this.settingsService = settingsService;
+        ApplyCommand = new AsyncRelayCommand(Apply);
+        RestoreSOLCommand = new AsyncRelayCommand(Restore);
 
-        ApplyCommand = new Command((o) => ApplyExecute(o));
-        RestoreSOLCommand = new Command((o) => RestoreSOL(o));
-
-        speedOfLight = this.settingsService.SpeedOfLight;
+        SpeedOfLight = Preferences.Default.Get("SpeedOfLight", c);
     }
 
     public ICommand ApplyCommand { get; }
     public ICommand RestoreSOLCommand { get; }
 
-    public double SpeedOfLight
+    private async Task Apply()
     {
-        get => speedOfLight;
-        set
-        {
-            speedOfLight = value;
-            OnPropertyChanged();
-            settingsService.SpeedOfLight = value;
-        }
+        Preferences.Default.Set("SpeedOfLight", SpeedOfLight);
+        await Shell.Current.GoToAsync("..?refresh=true");
     }
 
-    private async void ApplyExecute(object o)
+    private async Task Restore()
     {
-        await Shell.Current.GoToAsync("..").ConfigureAwait(false);
-    }
-
-    private void RestoreSOL(object o)
-    {
-        SpeedOfLight = 299792458;
+        SpeedOfLight = c;
+        Preferences.Default.Set("SpeedOfLight", SpeedOfLight);
     }
 }

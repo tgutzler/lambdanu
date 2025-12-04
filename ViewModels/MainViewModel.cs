@@ -1,10 +1,7 @@
 ﻿using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using LambdaNu.Providers;
-using LambdaNu.Views;
-
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 namespace LambdaNu.ViewModels;
 
 public enum UnitType
@@ -21,32 +18,39 @@ public enum UnitType
     pm
 }
 
-public class MainViewModel : ViewModelBase
+internal partial class MainViewModel : ObservableObject, IQueryAttributable
 {
-    private readonly ISettingsService settingsService;
-    private double result;
-    private double input;
-    private UnitType toUnit;
-    private UnitType fromUnit;
-    private string bwMode = "";
-    private double bwDelta;
-    private UnitType bwDeltaUnit;
-    private double bwResult;
-    private double bwResultLower;
-    private double bwResultUpper;
-    private UnitType bwUnit;
+    [ObservableProperty]
+    private double _input;
+    [ObservableProperty]
+    private UnitType _fromUnit;
+    [ObservableProperty]
+    private UnitType _toUnit;
+    [ObservableProperty]
+    private double _result;
+    [ObservableProperty]
+    private string _bwMode = "";
+    [ObservableProperty]
+    private double _bwDelta;
+    [ObservableProperty]
+    private UnitType _bwDeltaUnit;
+    [ObservableProperty]
+    private double _bwResult;
+    [ObservableProperty]
+    private double _bwResultLower;
+    [ObservableProperty]
+    private double _bwResultUpper;
+    [ObservableProperty]
+    private UnitType _bwUnit;
 
-    public MainViewModel(ISettingsService settingsService)
+    public MainViewModel()
     {
-        this.settingsService = settingsService;
-        this.settingsService.SettingsChanged += this.SettingsService_SettingsChanged;
-
-        Units = Enum.GetValues(typeof(UnitType)).Cast<UnitType>().ToList().AsReadOnly();
         BwModes = new List<string> { "+", "-", "\u00B1" }.AsReadOnly();
+        Units = new ObservableCollection<UnitType>(Enum.GetValues<UnitType>());
 
-        ConfigCommand = new Command((o) => ShowConfigExecute(o));
+        ConfigCommand = new AsyncRelayCommand(ConfigAsync);
 
-        Input = 193;
+        Input = 193.4;
         FromUnit = UnitType.THz;
         ToUnit = UnitType.nm;
         BwMode = "+";
@@ -55,152 +59,44 @@ public class MainViewModel : ViewModelBase
         BwUnit = UnitType.pm;
     }
 
-    private void SettingsService_SettingsChanged(object? sender, string e)
-    {
-        if (e == nameof(ISettingsService.SpeedOfLight))
-        {
-            Calculate();
-            CalculateBw();
-        }
-    }
-
     public ICommand ConfigCommand { get; }
-    public ReadOnlyCollection<UnitType> Units { get; }
-    public UnitType FromUnit
-    {
-        get => fromUnit;
-        set
-        {
-            fromUnit = value;
-            Calculate();
-            CalculateBw();
-        }
-    }
-    public UnitType ToUnit
-    {
-        get => toUnit;
-        set
-        {
-            toUnit = value;
-            Calculate();
-            CalculateBw();
-        }
-    }
-    public double Input
-    {
-        get => input;
-        set
-        {
-            input = value;
-            Calculate();
-            CalculateBw();
-        }
-    }
-    public double Result
-    {
-        get => result;
-        private set
-        {
-            result = value;
-            OnPropertyChanged();
-        }
-    }
+    public ObservableCollection<UnitType> Units { get; }
     public ReadOnlyCollection<string> BwModes { get; }
-    public string BwMode
-    {
-        get => bwMode;
-        set
-        {
-            bwMode = value;
-            CalculateBw();
-        }
-    }
-    public double BwDelta
-    {
-        get => bwDelta;
-        set
-        {
-            bwDelta = value;
-            CalculateBw();
-        }
-    }
 
-    public UnitType BwDeltaUnit
-    {
-        get => bwDeltaUnit;
-        set
-        {
-            bwDeltaUnit = value;
-            CalculateBw();
-        }
-    }
-    public double BwResult
-    {
-        get => bwResult;
-        set
-        {
-            bwResult = value;
-            OnPropertyChanged();
-        }
-    }
-    public double BwResultLower
-    {
-        get => bwResultLower;
-        set
-        {
-            bwResultLower = value;
-            OnPropertyChanged();
-        }
-    }
-    public double BwResultUpper
-    {
-        get => bwResultUpper;
-        set
-        {
-            bwResultUpper = value;
-            OnPropertyChanged();
-        }
-    }
-    public UnitType BwUnit
-    {
-        get => bwUnit;
-        set
-        {
-            bwUnit = value;
-            CalculateBw();
-        }
-    }
+    partial void OnInputChanged(double value) => Calculate();
+    partial void OnFromUnitChanged(UnitType value) => Calculate();
+    partial void OnToUnitChanged(UnitType value) => Calculate();
+    partial void OnBwDeltaChanged(double value) => Calculate();
+    partial void OnBwModeChanged(string value) => Calculate();
+    partial void OnBwDeltaUnitChanged(UnitType value) => Calculate();
+    partial void OnBwUnitChanged(UnitType value) => Calculate();
 
     private void Calculate()
     {
         Result = Convert(Input, FromUnit, ToUnit);
-    }
-
-    private void CalculateBw()
-    {
         var input = Convert(Input, FromUnit, BwDeltaUnit);
         double lower;
         double upper;
-        if ((BwMode == "+" && fromUnit.IsM() && bwDeltaUnit.IsM())
-            || (BwMode == "+" && fromUnit.IsHz() && bwDeltaUnit.IsHz()))
+        if ((BwMode == "+" && FromUnit.IsM() && BwDeltaUnit.IsM())
+            || (BwMode == "+" && FromUnit.IsHz() && BwDeltaUnit.IsHz()))
         {
-            lower = Convert(input, bwDeltaUnit, bwUnit);
-            upper = Convert(input + bwDelta, bwDeltaUnit, bwUnit);
+            lower = Convert(input, BwDeltaUnit, BwUnit);
+            upper = Convert(input + BwDelta, BwDeltaUnit, BwUnit);
         }
-        else if ((BwMode == "-" && fromUnit.IsM() && bwDeltaUnit.IsHz())
-            || (BwMode == "-" && fromUnit.IsHz() && bwDeltaUnit.IsM()))
+        else if ((BwMode == "-" && FromUnit.IsM() && BwDeltaUnit.IsHz())
+            || (BwMode == "-" && FromUnit.IsHz() && BwDeltaUnit.IsM()))
         {
-            upper = Convert(input, bwDeltaUnit, bwUnit);
-            lower = Convert(input + bwDelta, bwDeltaUnit, bwUnit);
+            upper = Convert(input, BwDeltaUnit, BwUnit);
+            lower = Convert(input + BwDelta, BwDeltaUnit, BwUnit);
         }
-        else if ((BwMode == "-" && fromUnit.IsM() && bwDeltaUnit.IsM())
-            || (BwMode == "-" && fromUnit.IsHz() && bwDeltaUnit.IsHz()))
+        else if ((BwMode == "-" && FromUnit.IsM() && BwDeltaUnit.IsM())
+            || (BwMode == "-" && FromUnit.IsHz() && BwDeltaUnit.IsHz()))
         {
             lower = Convert(input - BwDelta, BwDeltaUnit, BwUnit);
             upper = Convert(input, BwDeltaUnit, BwUnit);
         }
-        else if ((BwMode == "+" && fromUnit.IsM() && bwDeltaUnit.IsHz())
-            || (BwMode == "+" && fromUnit.IsHz() && bwDeltaUnit.IsM()))
+        else if ((BwMode == "+" && FromUnit.IsM() && BwDeltaUnit.IsHz())
+            || (BwMode == "+" && FromUnit.IsHz() && BwDeltaUnit.IsM()))
         {
             upper = Convert(input - BwDelta, BwDeltaUnit, BwUnit);
             lower = Convert(input, BwDeltaUnit, BwUnit);
@@ -208,55 +104,63 @@ public class MainViewModel : ViewModelBase
         else
         {
             lower = Convert(input - BwDelta, BwDeltaUnit, BwUnit);
-            upper = Convert(input + bwDelta, bwDeltaUnit, bwUnit);
+            upper = Convert(input + BwDelta, BwDeltaUnit, BwUnit);
             if (lower > upper)
             {
                 (lower, upper) = (upper, lower);
             }
         }
 
-        BwResultLower = Convert(lower, bwUnit, fromUnit);
-        BwResultUpper = Convert(upper, bwUnit, fromUnit);
+        BwResultLower = Convert(lower, BwUnit, FromUnit);
+        BwResultUpper = Convert(upper, BwUnit, FromUnit);
         BwResult = Math.Abs(upper - lower);
     }
 
     private double Convert(double input, UnitType fromUnit, UnitType toUnit)
     {
-        var speedOfLight = settingsService.SpeedOfLight;
+        var speedOfLight = Preferences.Default.Get("SpeedOfLight", 299792458);
         var inputAsThz = fromUnit switch
         {
-            UnitType.Hz  => input / 1e12,
+            UnitType.Hz => input / 1e12,
             UnitType.kHz => input / 1e9,
             UnitType.MHz => input / 1e6,
             UnitType.GHz => input / 1e3,
             UnitType.THz => input,
-            UnitType.m   => speedOfLight / input / 1e12,
-            UnitType.mm  => speedOfLight / input / 1e9,
-            UnitType.um  => speedOfLight / input / 1e6,
-            UnitType.nm  => speedOfLight / input / 1e3,
-            UnitType.pm  => speedOfLight / input,
+            UnitType.m => speedOfLight / input / 1e12,
+            UnitType.mm => speedOfLight / input / 1e9,
+            UnitType.um => speedOfLight / input / 1e6,
+            UnitType.nm => speedOfLight / input / 1e3,
+            UnitType.pm => speedOfLight / input,
             _ => double.NaN,
         };
 
         return toUnit switch
         {
-            UnitType.Hz  => inputAsThz * 1e12,
+            UnitType.Hz => inputAsThz * 1e12,
             UnitType.kHz => inputAsThz * 1e9,
             UnitType.MHz => inputAsThz * 1e6,
             UnitType.GHz => inputAsThz * 1e3,
             UnitType.THz => inputAsThz * 1,
-            UnitType.m   => speedOfLight / inputAsThz / 1e12,
-            UnitType.mm  => speedOfLight / inputAsThz / 1e9,
-            UnitType.um  => speedOfLight / inputAsThz / 1e6,
-            UnitType.nm  => speedOfLight / inputAsThz / 1e3,
-            UnitType.pm  => speedOfLight / inputAsThz,
+            UnitType.m => speedOfLight / inputAsThz / 1e12,
+            UnitType.mm => speedOfLight / inputAsThz / 1e9,
+            UnitType.um => speedOfLight / inputAsThz / 1e6,
+            UnitType.nm => speedOfLight / inputAsThz / 1e3,
+            UnitType.pm => speedOfLight / inputAsThz,
             _ => double.NaN,
         };
     }
 
-    private async void ShowConfigExecute(object o)
+    private async Task ConfigAsync()
     {
-        await Shell.Current.GoToAsync(nameof(SettingsPage)).ConfigureAwait(false);
+        await Shell.Current.GoToAsync(nameof(Views.SettingsPage));
+    }
+
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
+    {
+        if (query.ContainsKey("refresh"))
+            Calculate();
+
+        query.Clear();
     }
 }
 

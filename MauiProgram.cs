@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using LambdaNu.Providers;
+﻿using Microsoft.Extensions.Logging;
 
 namespace LambdaNu;
 
@@ -14,34 +13,12 @@ public static class MauiProgram
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-			})
-			.RegisterServices()
-			.RegisterViews()
-			.RegisterViewModels();
+			});
 
-        return builder.Build();
-	}
+#if DEBUG
+		builder.Logging.AddDebug();
+#endif
 
-	private static MauiAppBuilder RegisterServices(this MauiAppBuilder builder)
-	{
-		builder.Services.AddSingleton<ISettingsService, SettingsService>();
-
-		return builder;
-	}
-
-	private static MauiAppBuilder RegisterViews(this MauiAppBuilder builder)
-	{
-        builder.Services.AddSingleton<Views.MainPage>();
-        builder.Services.AddSingleton<Views.SettingsPage>();
-
-		return builder;
-    }
-
-    private static MauiAppBuilder RegisterViewModels(this MauiAppBuilder builder)
-	{
-        builder.Services.AddSingleton<ViewModels.MainViewModel>();
-        builder.Services.AddSingleton<ViewModels.SettingsViewModel>();
-
-		return builder;
+		return builder.Build();
 	}
 }

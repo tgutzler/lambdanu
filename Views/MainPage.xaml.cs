@@ -1,13 +1,9 @@
-﻿using LambdaNu.ViewModels;
-
-namespace LambdaNu.Views;
+﻿namespace LambdaNu.Views;
 
 public partial class MainPage : ContentPage
 {
-	public MainPage(MainViewModel vm)
+	public MainPage()
 	{
-		BindingContext = vm;
-
 		InitializeComponent();
 	}
 }
