@@ -77,26 +77,26 @@ internal partial class MainViewModel : ObservableObject, IQueryAttributable
         var input = Convert(Input, FromUnit, BwDeltaUnit);
         double lower;
         double upper;
-        if ((BwMode == "+" && FromUnit.IsM() && BwDeltaUnit.IsM())
-            || (BwMode == "+" && FromUnit.IsHz() && BwDeltaUnit.IsHz()))
+        if ((BwMode == "+" && ToUnit.IsM() && BwDeltaUnit.IsM())
+            || (BwMode == "+" && ToUnit.IsHz() && BwDeltaUnit.IsHz()))
         {
             lower = Convert(input, BwDeltaUnit, BwUnit);
             upper = Convert(input + BwDelta, BwDeltaUnit, BwUnit);
         }
-        else if ((BwMode == "-" && FromUnit.IsM() && BwDeltaUnit.IsHz())
-            || (BwMode == "-" && FromUnit.IsHz() && BwDeltaUnit.IsM()))
+        else if ((BwMode == "-" && ToUnit.IsM() && BwDeltaUnit.IsHz())
+            || (BwMode == "-" && ToUnit.IsHz() && BwDeltaUnit.IsM()))
         {
             upper = Convert(input, BwDeltaUnit, BwUnit);
             lower = Convert(input + BwDelta, BwDeltaUnit, BwUnit);
         }
-        else if ((BwMode == "-" && FromUnit.IsM() && BwDeltaUnit.IsM())
-            || (BwMode == "-" && FromUnit.IsHz() && BwDeltaUnit.IsHz()))
+        else if ((BwMode == "-" && ToUnit.IsM() && BwDeltaUnit.IsM())
+            || (BwMode == "-" && ToUnit.IsHz() && BwDeltaUnit.IsHz()))
         {
             lower = Convert(input - BwDelta, BwDeltaUnit, BwUnit);
             upper = Convert(input, BwDeltaUnit, BwUnit);
         }
-        else if ((BwMode == "+" && FromUnit.IsM() && BwDeltaUnit.IsHz())
-            || (BwMode == "+" && FromUnit.IsHz() && BwDeltaUnit.IsM()))
+        else if ((BwMode == "+" && ToUnit.IsM() && BwDeltaUnit.IsHz())
+            || (BwMode == "+" && ToUnit.IsHz() && BwDeltaUnit.IsM()))
         {
             upper = Convert(input - BwDelta, BwDeltaUnit, BwUnit);
             lower = Convert(input, BwDeltaUnit, BwUnit);
@@ -111,8 +111,8 @@ internal partial class MainViewModel : ObservableObject, IQueryAttributable
             }
         }
 
-        BwResultLower = Convert(lower, BwUnit, FromUnit);
-        BwResultUpper = Convert(upper, BwUnit, FromUnit);
+        BwResultLower = Convert(lower, BwUnit, ToUnit);
+        BwResultUpper = Convert(upper, BwUnit, ToUnit);
         BwResult = Math.Abs(upper - lower);
     }
 
